@@ -1,0 +1,29 @@
+{
+	"name": "Go",
+	"build": {
+	  "dockerfile": "Dockerfile"
+	},
+	"features": {
+	  "ghcr.io/devcontainers-extra/features/node-asdf:0": {}
+	},
+	"runArgs": [
+	  "--network=host", 
+	  "--env=DISPLAY", 
+	  "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
+	],
+	"customizations": {
+		"vscode":{
+			"settings": {
+			  "go.toolsManagement.autoUpdate": true,
+			  "go.useGoProxyToCheckForToolUpdates": true,
+			  "go.gopath":"/home/vscode/go"
+			},
+			"extensions": [
+			  "golang.go"
+			]
+		}
+	},
+	"postCreateCommand": "go install fyne.io/fyne/v2/cmd/fyne@latest",
+	"remoteUser": "vscode"
+  }
+  
