@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,6 +12,7 @@ import (
 type Game struct{}
 
 func (g *Game) Update() error {
+	fmt.Println("Update loop")
 	return nil
 }
 
