@@ -1,7 +1,6 @@
 package dependencies
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 
@@ -29,52 +28,59 @@ type DefaultDependencyManager struct {
 }
 
 // NewDependencies initializes all dependencies for the game.
-func NewDependencies(
-	assetManager embeds.AssetManager,
-	fontManager resources.FontManager,
-	defaultFont *string,
-	gameManager game.GameManager,
-) (*DefaultDependencyManager, error) {
-	// Initialize AssetManager if nil
+func NewDependencies(opts ...Option) (*DefaultDependencyManager, error) {
+	// Initialize options with defaults
+	options := &Options{
+		DefaultFont:     resources.DefaultFontName,
+		DefaultFontSize: 16.0,
+	}
+
+	// Apply the functional options to override defaults
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// Initialize AssetManager if not provided
+	assetManager := options.AssetManager
 	if assetManager == nil {
 		assetManager = embeds.NewDefaultAssetManager()
 	}
 
-	// Initialize FontManager if nil
+	// Initialize FontManager if not provided
+	fontManager := options.FontManager
 	if fontManager == nil {
 		fontManager = resources.NewDefaultFontManager(assetManager)
 	}
-	var loadedFont font.Face
-	var err error
 
-	if defaultFont == nil {
-		// Load the default font
-		loadedFont, err = fontManager.LoadFont(resources.DefaultFontName, 16)
+	// Load the default font
+	defaultFont, err := fontManager.LoadFont(options.DefaultFont, options.DefaultFontSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize GameManager if not provided
+	gameManager := options.GameManager
+	if gameManager == nil {
+		gameManager, err = game.NewDefaultGameManager(func(dst *ebiten.Image, text string, x, y int) {
+			drawer := &font.Drawer{
+				Dst:  dst,
+				Src:  image.NewUniform(color.White),
+				Face: defaultFont,
+				Dot:  fixed.P(x, y),
+			}
+			drawer.DrawString(text)
+		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to load default font: %w", err)
+			return nil, err
 		}
 	}
 
-	dm := &DefaultDependencyManager{
+	return &DefaultDependencyManager{
 		AssetsManager: assetManager,
 		FontManager:   fontManager,
-		DefaultFont:   loadedFont,
-	}
-
-	// Initialize GameManager if nil
-	if gameManager == nil {
-		dm.GameManager, err = game.NewDefaultGameManager(dm.GetTextWriter())
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize game manager: %w", err)
-		}
-	}
-
-	return dm, nil
-}
-
-// NewDefaultDependencies with error handling
-func NewDefaultDependencies() (*DefaultDependencyManager, error) {
-	return NewDependencies(nil, nil, nil, nil)
+		DefaultFont:   defaultFont,
+		GameManager:   gameManager,
+	}, nil
 }
 
 // GetAssetManager returns the asset manager.

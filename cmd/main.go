@@ -9,11 +9,15 @@ var dm dependencies.DependencyManager
 
 func main() {
 
-	dm, err := dependencies.NewDefaultDependencies()
+	dm, err := dependencies.NewDependencies()
 	if err != nil {
 		panic(err)
 	}
 
-	game := dm.GetGameManager().NewGame()
+	game, err := dm.GetGameManager().NewGame()
+	if err != nil {
+		panic(err)
+	}
+
 	ebiten.RunGame(game)
 }

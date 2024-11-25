@@ -7,39 +7,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type GameManager interface {
-	NewGame() Game
-}
-
-type DefaultGameManager struct {
-	drawText func(dst *ebiten.Image, text string, x, y int)
-}
-
-func NewDefaultGameManager(textWriter func(dst *ebiten.Image, text string, x, y int)) (GameManager, error) {
-
-	return &DefaultGameManager{
-		drawText: textWriter,
-	}, nil
-}
-
-func (gm *DefaultGameManager) NewGame() Game {
-
-	return &MisfitGame{
-		drawText: gm.drawText,
-	}
-}
-
 type Game interface {
 	ebiten.Game
 }
 
 type MisfitGame struct {
 	drawText func(dst *ebiten.Image, text string, x, y int)
+	options  *GameOptions
 }
 
 // Update implements Game.
 func (g *MisfitGame) Update() error {
-	fmt.Println("Update loop")
+	fmt.Printf("Update loop for %d player(s)\n", g.options.NumPlayers)
 	return nil
 }
 
@@ -55,10 +34,9 @@ func (g *MisfitGame) Draw(screen *ebiten.Image) {
 	screen.DrawImage(rect, op)
 
 	// Display "Hello, Ebiten!" text
-
-	g.drawText(screen, "Hello, Ebiten! With the new Font", 25, 25)
+	g.drawText(screen, "Hello, Ebiten!", 25, 25)
 }
 
 func (g *MisfitGame) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 800, 600
+	return g.options.ScreenWidth, g.options.ScreenHeight
 }
