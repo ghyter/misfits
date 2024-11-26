@@ -3,7 +3,8 @@ package game
 import (
 	"fmt"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/ghyter/misfits/internal/dependencies"
+	"github.com/ghyter/misfits/internal/resources"
 )
 
 type GameManager interface {
@@ -11,12 +12,20 @@ type GameManager interface {
 }
 
 type DefaultGameManager struct {
-	drawText func(dst *ebiten.Image, text string, x, y int)
+	dm      *dependencies.DependencyManager
+	Options *GameManagerOptions
 }
 
-func NewDefaultGameManager(textWriter func(dst *ebiten.Image, text string, x, y int)) (GameManager, error) {
+func NewDefaultGameManager(dm *dependencies.DependencyManager, opt ...GameManagerOption) (GameManager, error) {
+
+	options, err := NewGameManagerOptions(dm, opt...)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DefaultGameManager{
-		drawText: textWriter,
+		dm:      dm,
+		Options: options,
 	}, nil
 }
 
@@ -26,9 +35,19 @@ func (gm *DefaultGameManager) NewGame(opts ...GameOption) (Game, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid GameOptions: %w", err)
 	}
+	font, err := gm.Options.FontManager.LoadFont(resources.DefaultFontName, 12)
+	if err != nil {
+		return nil, fmt.Errorf("invalid font: %s", resources.DefaultFontName)
+	}
 
-	return &MisfitGame{
-		drawText: gm.drawText,
-		options:  options,
-	}, nil
+	game := &MisfitGame{
+		dm:        gm.dm,
+		options:   options,
+		gmOptions: gm.Options,
+		font:      font,
+	}
+
+	game.InitUI()
+
+	return game, nil
 }

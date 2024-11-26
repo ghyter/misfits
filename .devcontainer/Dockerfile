@@ -23,5 +23,3 @@ RUN mkdir -p $GOPATH && \
 # Use non-root user (vscode)
 USER vscode
 
-# Install the Fyne CLI
-RUN go install fyne.io/fyne/v2/cmd/fyne@latest

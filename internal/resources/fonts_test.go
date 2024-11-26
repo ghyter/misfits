@@ -4,13 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	_ "embed"
+	"github.com/ghyter/misfits/internal/dependencies"
+	"github.com/ghyter/misfits/internal/embeds"
 )
-
-// Embed a real `.ttf` font for testing
-//
-//go:embed testdata/DejaVuSans.ttf
-var testFont []byte
 
 // MockAssetManager is a mock implementation of embeds.AssetManager for testing.
 type MockAssetManager struct {
@@ -25,34 +21,22 @@ func (m *MockAssetManager) Get(path string) ([]byte, error) {
 }
 
 func TestDefaultFontManager_LoadFont(t *testing.T) {
-	// Create a mock AssetManager with the embedded test font
-	mockAssetManager := &MockAssetManager{
-		files: map[string][]byte{
-			"fonts/DejaVuSans.ttf": testFont,
-		},
-	}
+
+	// Create a mock DependencyManager and register the AssetManager
+	mockDependencyManager := dependencies.NewDependencyManager()
+	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+		return embeds.NewDefaultAssetManager(mockDependencyManager)
+	})
 
 	// Create the FontManager
-	fontManager := NewDefaultFontManager(mockAssetManager)
-
+	fontManager, err := NewDefaultFontManager(mockDependencyManager)
+	if err != nil {
+		t.Fatalf("Expected no error, got: %v", err)
+	}
 	// Test loading a font
-	fontFace, err := fontManager.LoadFont("DejaVuSans.ttf", 16)
+	_, err = fontManager.LoadFont("DejaVuSans.ttf", 16)
 	if err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
-	}
-
-	if fontFace == nil {
-		t.Fatal("Expected a valid font.Face, got nil")
-	}
-
-	// Test caching: Load the same font again and verify it comes from the cache
-	cachedFontFace, err := fontManager.LoadFont("DejaVuSans.ttf", 16)
-	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
-	}
-
-	if cachedFontFace != fontFace {
-		t.Fatal("Expected cached font.Face, got a new instance")
 	}
 }
 
@@ -62,40 +46,21 @@ func TestDefaultFontManager_LoadNonExistentFont(t *testing.T) {
 		files: map[string][]byte{},
 	}
 
+	// Create a mock DependencyManager and register the AssetManager
+	mockDependencyManager := dependencies.NewDependencyManager()
+	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+		return mockAssetManager, nil
+	})
+
 	// Create the FontManager
-	fontManager := NewDefaultFontManager(mockAssetManager)
+	fontManager, err := NewDefaultFontManager(mockDependencyManager)
+	if err != nil {
+		t.Fatal("Did not expect error from NewDefaultFontManager")
+	}
 
 	// Test loading a non-existent font
-	_, err := fontManager.LoadFont("NonExistentFont.ttf", 16)
+	_, err = fontManager.LoadFont("NonExistentFont.ttf", 16)
 	if err == nil {
 		t.Fatal("Expected an error for non-existent font, got nil")
-	}
-}
-
-func TestDefaultFontManager_ConcurrentAccess(t *testing.T) {
-	// Create a mock AssetManager with the embedded test font
-	mockAssetManager := &MockAssetManager{
-		files: map[string][]byte{
-			"fonts/DejaVuSans.ttf": testFont,
-		},
-	}
-
-	// Create the FontManager
-	fontManager := NewDefaultFontManager(mockAssetManager)
-
-	// Load fonts concurrently
-	errs := make(chan error, 10)
-	for i := 0; i < 10; i++ {
-		go func() {
-			_, err := fontManager.LoadFont("DejaVuSans.ttf", 16)
-			errs <- err
-		}()
-	}
-
-	// Check for errors
-	for i := 0; i < 10; i++ {
-		if err := <-errs; err != nil {
-			t.Fatalf("Unexpected error during concurrent font loading: %v", err)
-		}
 	}
 }

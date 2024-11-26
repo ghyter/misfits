@@ -6,15 +6,15 @@ import (
 
 // TestNewAssetManager verifies that a new AssetManager can be created successfully.
 func TestNewAssetManager(t *testing.T) {
-	manager := NewDefaultAssetManager()
-	if manager == nil {
+	manager, err := NewDefaultAssetManager(nil)
+	if manager == nil || err != nil {
 		t.Fatalf("Expected AssetManager instance, got nil")
 	}
 }
 
 // TestGet_ExistingFile verifies that the AssetManager can retrieve an embedded file successfully.
 func TestGet_ExistingFile(t *testing.T) {
-	manager := NewDefaultAssetManager()
+	manager, _ := NewDefaultAssetManager(nil)
 
 	// Use a file known to exist in the embedded assets
 	data, err := manager.Get("fonts/DejaVuSans.ttf")
@@ -30,7 +30,7 @@ func TestGet_ExistingFile(t *testing.T) {
 
 // TestGet_NonExistentFile verifies that the AssetManager returns an error for a missing file.
 func TestGet_NonExistentFile(t *testing.T) {
-	manager := NewDefaultAssetManager()
+	manager, _ := NewDefaultAssetManager(nil)
 
 	// Try to get a file that doesn't exist
 	_, err := manager.Get("nonexistent-file.txt")

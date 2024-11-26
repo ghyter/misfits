@@ -3,6 +3,8 @@ package embeds
 import (
 	"embed"
 	"fmt"
+
+	"github.com/ghyter/misfits/internal/dependencies"
 )
 
 //go:embed assets
@@ -14,10 +16,14 @@ type AssetManager interface {
 
 type DefaultAssetManager struct {
 	cache map[string][]byte
+	dm    *dependencies.DependencyManager
 }
 
-func NewDefaultAssetManager() AssetManager {
-	return &DefaultAssetManager{cache: make(map[string][]byte)}
+func NewDefaultAssetManager(dm *dependencies.DependencyManager) (AssetManager, error) {
+
+	return &DefaultAssetManager{cache: make(map[string][]byte),
+		dm: dm,
+	}, nil
 }
 
 func (a *DefaultAssetManager) Get(path string) ([]byte, error) {

@@ -2,8 +2,10 @@ package resources
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
+	"github.com/ghyter/misfits/internal/dependencies"
 	"github.com/ghyter/misfits/internal/embeds"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -16,17 +18,23 @@ type FontManager interface {
 }
 
 type DefaultFontManager struct {
+	dm           *dependencies.DependencyManager
 	assetManager embeds.AssetManager
 	cache        map[string]font.Face
 	mu           sync.Mutex
 }
 
 // NewDefaultFontManager creates a new DefaultFontManager instance.
-func NewDefaultFontManager(assetManager embeds.AssetManager) *DefaultFontManager {
+func NewDefaultFontManager(dm *dependencies.DependencyManager) (FontManager, error) {
+	assetManager, err := dependencies.Get[embeds.AssetManager](dm)
+	if err != nil {
+		log.Fatal("Missing Dependency: FontManager requires the assetManager")
+	}
 	return &DefaultFontManager{
+		dm:           dm,
 		assetManager: assetManager,
 		cache:        make(map[string]font.Face),
-	}
+	}, nil
 }
 
 // LoadFont loads a font from the embeds and caches it.

@@ -5,36 +5,70 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+
+	"golang.org/x/image/font"
+
+	"github.com/ghyter/misfits/internal/dependencies"
+	"github.com/ghyter/misfits/internal/screenassets"
 )
 
 type Game interface {
 	ebiten.Game
 }
 
+type GameState int
+
+const (
+	StateMenu GameState = iota // Menu state of the game
+	StateGame                  // Gameplay state
+)
+
 type MisfitGame struct {
-	drawText func(dst *ebiten.Image, text string, x, y int)
-	options  *GameOptions
+	dm        *dependencies.DependencyManager
+	gmOptions *GameManagerOptions
+	options   *GameOptions
+	state     GameState
+	font      font.Face
+	menu      screenassets.MenuScreen
+}
+
+func (g *MisfitGame) InitUI() error {
+	g.menu = *screenassets.NewMenuScreen()
+	return nil
 }
 
 // Update implements Game.
 func (g *MisfitGame) Update() error {
-	fmt.Printf("Update loop for %d player(s)\n", g.options.NumPlayers)
+
+	switch g.state {
+	case StateMenu:
+		// Handle input to select player count
+		if ebiten.IsKeyPressed(ebiten.Key2) {
+			g.options.NumPlayers = 2
+			g.state = StateGame
+		} else if ebiten.IsKeyPressed(ebiten.Key3) {
+			g.options.NumPlayers = 3
+			g.state = StateGame
+		} else if ebiten.IsKeyPressed(ebiten.Key4) {
+			g.options.NumPlayers = 4
+			g.state = StateGame
+		}
+	case StateGame:
+		fmt.Printf("Game running with %d players\n", g.options.NumPlayers)
+	}
 	return nil
 }
 
 func (g *MisfitGame) Draw(screen *ebiten.Image) {
 	// Clear the screen with a background color
 	screen.Fill(color.RGBA{R: 50, G: 50, B: 150, A: 255})
+	switch g.state {
+	case StateMenu:
+		g.menu.Draw(screen)
+	case StateGame:
 
-	// Draw a simple rectangle
-	rect := ebiten.NewImage(100, 50)
-	rect.Fill(color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(350, 275)
-	screen.DrawImage(rect, op)
+	}
 
-	// Display "Hello, Ebiten!" text
-	g.drawText(screen, "Hello, Ebiten!", 25, 25)
 }
 
 func (g *MisfitGame) Layout(outsideWidth, outsideHeight int) (int, int) {

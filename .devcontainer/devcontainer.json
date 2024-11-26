@@ -23,7 +23,7 @@
 			]
 		}
 	},
-	"postCreateCommand": "go install fyne.io/fyne/v2/cmd/fyne@latest",
+	//"postCreateCommand": "go install fyne.io/fyne/v2/cmd/fyne@latest",
 	"remoteUser": "vscode"
   }
   
