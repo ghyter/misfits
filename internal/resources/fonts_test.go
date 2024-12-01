@@ -24,7 +24,7 @@ func TestDefaultFontManager_LoadFont(t *testing.T) {
 
 	// Create a mock DependencyManager and register the AssetManager
 	mockDependencyManager := dependencies.NewDependencyManager()
-	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (embeds.AssetManager, error) {
 		return embeds.NewDefaultAssetManager(mockDependencyManager)
 	})
 
@@ -48,7 +48,7 @@ func TestDefaultFontManager_LoadNonExistentFont(t *testing.T) {
 
 	// Create a mock DependencyManager and register the AssetManager
 	mockDependencyManager := dependencies.NewDependencyManager()
-	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (embeds.AssetManager, error) {
 		return mockAssetManager, nil
 	})
 

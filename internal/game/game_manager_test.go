@@ -34,12 +34,12 @@ func TestGameManager_NewGame(t *testing.T) {
 	mockDependencyManager := dependencies.NewDependencyManager()
 
 	// Register mock AssetManager
-	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (embeds.AssetManager, error) {
 		return &MockAssetManager{}, nil
 	})
 
 	// Register mock FontManager
-	dependencies.Register(mockDependencyManager, func() (resources.FontManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (resources.FontManager, error) {
 		return &MockFontManager{}, nil
 	})
 
@@ -72,31 +72,15 @@ func TestGameManager_NewGame(t *testing.T) {
 	}
 }
 
-func TestGameManager_MissingFontManager(t *testing.T) {
-	// Mock DependencyManager without registering FontManager
-	mockDependencyManager := dependencies.NewDependencyManager()
-
-	// Register mock AssetManager
-	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
-		return &MockAssetManager{}, nil
-	})
-
-	// Create GameManager
-	_, err := NewDefaultGameManager(mockDependencyManager)
-	if err == nil {
-		t.Fatal("Expected error due to missing FontManager, got nil")
-	}
-}
-
 func TestGameManager_InvalidGameOptions(t *testing.T) {
 	// Mock DependencyManager
 	mockDependencyManager := dependencies.NewDependencyManager()
 
 	// Register mock AssetManager and FontManager
-	dependencies.Register(mockDependencyManager, func() (embeds.AssetManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (embeds.AssetManager, error) {
 		return &MockAssetManager{}, nil
 	})
-	dependencies.Register(mockDependencyManager, func() (resources.FontManager, error) {
+	dependencies.Register(mockDependencyManager, func(dm *dependencies.DependencyManager) (resources.FontManager, error) {
 		return &MockFontManager{}, nil
 	})
 

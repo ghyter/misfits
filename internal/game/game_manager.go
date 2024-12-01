@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ghyter/misfits/internal/dependencies"
-	"github.com/ghyter/misfits/internal/resources"
 )
 
 type GameManager interface {
@@ -35,16 +34,11 @@ func (gm *DefaultGameManager) NewGame(opts ...GameOption) (Game, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid GameOptions: %w", err)
 	}
-	font, err := gm.Options.FontManager.LoadFont(resources.DefaultFontName, 12)
-	if err != nil {
-		return nil, fmt.Errorf("invalid font: %s", resources.DefaultFontName)
-	}
 
 	game := &MisfitGame{
 		dm:        gm.dm,
 		options:   options,
 		gmOptions: gm.Options,
-		font:      font,
 	}
 
 	game.InitUI()

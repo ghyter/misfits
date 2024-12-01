@@ -1,4 +1,3 @@
-// internal/dependencies/dependency_manager.go
 package dependencies
 
 import (
@@ -7,63 +6,52 @@ import (
 	"sync"
 )
 
-// DependencyManager is a generic manager for lazy initialization and retrieval of dependencies.
+// DependencyManager manages dependencies by initializing them at registration.
 type DependencyManager struct {
-	registry  map[reflect.Type]func() (any, error) // Registry of dependency initializers
-	instances map[reflect.Type]any                 // Cache for initialized dependencies
-	lock      sync.Mutex                           // Mutex for thread-safe access
+	instances map[reflect.Type]any // Cache for initialized dependencies
+	instLock  sync.Mutex           // Lock for accessing instances
+	regLock   sync.Mutex           // Lock for accessing registry
 }
 
 // NewDependencyManager creates a new instance of DependencyManager.
 func NewDependencyManager() *DependencyManager {
 	return &DependencyManager{
-		registry:  make(map[reflect.Type]func() (any, error)),
 		instances: make(map[reflect.Type]any),
 	}
 }
 
-// Register adds a new dependency initializer for the specified type.
-func Register[T any](dm *DependencyManager, initializer func() (T, error)) {
-	dm.lock.Lock()
-	defer dm.lock.Unlock()
+// Register initializes and registers a dependency for the specified type.
+func Register[T any](dm *DependencyManager, initializer func(*DependencyManager) (T, error)) {
+	dm.regLock.Lock()
+	defer dm.regLock.Unlock()
 
 	typ := reflect.TypeOf((*T)(nil)).Elem()
-	if _, exists := dm.registry[typ]; exists {
+	if _, exists := dm.instances[typ]; exists {
 		panic(fmt.Sprintf("dependency of type %s is already registered", typ))
 	}
 
-	// Wrap initializer to match the generic interface
-	dm.registry[typ] = func() (any, error) {
-		return initializer()
+	// Initialize the dependency immediately using the DependencyManager
+	instance, err := initializer(dm)
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize dependency of type %s: %v", typ, err))
 	}
+
+	dm.instances[typ] = instance
 }
 
-// Get retrieves the dependency for the specified type, initializing it if necessary.
+// Get retrieves the already-initialized dependency for the specified type.
 func Get[T any](dm *DependencyManager) (T, error) {
-	dm.lock.Lock()
-	defer dm.lock.Unlock()
+	dm.instLock.Lock()
+	defer dm.instLock.Unlock()
 
 	typ := reflect.TypeOf((*T)(nil)).Elem()
 
-	// Check if already initialized
-	if instance, exists := dm.instances[typ]; exists {
-		return instance.(T), nil
-	}
-
-	// Initialize dependency
-	initializer, exists := dm.registry[typ]
+	// Retrieve the cached instance
+	instance, exists := dm.instances[typ]
 	if !exists {
 		var zero T
 		return zero, fmt.Errorf("no dependency registered for type %s", typ)
 	}
 
-	instance, err := initializer()
-	if err != nil {
-		var zero T
-		return zero, fmt.Errorf("failed to initialize dependency of type %s: %w", typ, err)
-	}
-
-	// Cache the initialized instance
-	dm.instances[typ] = instance
 	return instance.(T), nil
 }

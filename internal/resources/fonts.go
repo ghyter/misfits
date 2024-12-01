@@ -2,7 +2,6 @@ package resources
 
 import (
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/ghyter/misfits/internal/dependencies"
@@ -18,22 +17,19 @@ type FontManager interface {
 }
 
 type DefaultFontManager struct {
-	dm           *dependencies.DependencyManager
-	assetManager embeds.AssetManager
-	cache        map[string]font.Face
-	mu           sync.Mutex
+	dm *dependencies.DependencyManager
+	//assetManager embeds.AssetManager
+	cache map[string]font.Face
+	mu    sync.Mutex
 }
 
 // NewDefaultFontManager creates a new DefaultFontManager instance.
 func NewDefaultFontManager(dm *dependencies.DependencyManager) (FontManager, error) {
-	assetManager, err := dependencies.Get[embeds.AssetManager](dm)
-	if err != nil {
-		log.Fatal("Missing Dependency: FontManager requires the assetManager")
-	}
+
 	return &DefaultFontManager{
-		dm:           dm,
-		assetManager: assetManager,
-		cache:        make(map[string]font.Face),
+		dm: dm,
+
+		cache: make(map[string]font.Face),
 	}, nil
 }
 
@@ -50,8 +46,9 @@ func (fm *DefaultFontManager) LoadFont(name string, size float64) (font.Face, er
 		return face, nil
 	}
 
+	assetManager, err := dependencies.Get[embeds.AssetManager](fm.dm)
 	// Load the font data from the AssetManager
-	fontData, err := fm.assetManager.Get(fmt.Sprintf("fonts/%s", name))
+	fontData, err := assetManager.Get(fmt.Sprintf("fonts/%s", name))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load font %s: %w", name, err)
 	}
