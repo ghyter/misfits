@@ -6,6 +6,7 @@ import (
 
 	"github.com/ghyter/misfits/internal/dependencies"
 	"github.com/ghyter/misfits/internal/embeds"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // MockAssetManager is a mock implementation of embeds.AssetManager for testing.
@@ -18,6 +19,15 @@ func (m *MockAssetManager) Get(path string) ([]byte, error) {
 		return data, nil
 	}
 	return nil, errors.New("file not found")
+}
+
+func (m *MockAssetManager) GetEbitenImage(path string) (*ebiten.Image, error) {
+	if path == "images/test_image.png" {
+		// Create a dummy Ebiten image for testing
+		img := ebiten.NewImage(100, 100) // Mock an image with 100x100 pixels
+		return img, nil
+	}
+	return nil, errors.New("image not found")
 }
 
 func TestDefaultFontManager_LoadFont(t *testing.T) {

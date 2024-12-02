@@ -19,7 +19,7 @@ func GetEbitenConfig() *EbitenConfig {
 	return &EbitenConfig{
 		WindowWidth:        900,
 		WindowHeight:       800,
-		WindowTitle:        "Ebiten Misfit Friends",
+		WindowTitle:        "Ebiten Isle of Maladjusted Trolls",
 		WindowResizingMode: ebiten.WindowResizingModeEnabled,
 	}
 }

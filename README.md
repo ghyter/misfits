@@ -11,11 +11,13 @@ This is a golang application that uses ebiten for the graphics engine.  The appl
 ├── go.sum
 ├── internal
 │   ├── config
-│   │   └── config.go
+│   │   ├── config.go
+│   │   ├── defaultdependencies.go
+│   │   ├── defaultdependencies_test.go
+│   │   └── globaloptions.go
 │   ├── dependencies
-│   │   ├── dependencies.go
-│   │   ├── dependencies_test.go
-│   │   └── dependency_options.go
+│   │   ├── dependencymanager.go
+│   │   └── dependencymanager_test.go
 │   ├── embeds
 │   │   ├── assetmanager.go
 │   │   ├── assetmanager_test.go
@@ -32,12 +34,12 @@ This is a golang application that uses ebiten for the graphics engine.  The appl
 │   │   └── game_options.go
 │   ├── resources
 │   │   ├── fonts.go
-│   │   ├── fonts_test.go
-│   │   └── testdata
-│   │       └── DejaVuSans.ttf
+│   │   └── fonts_test.go
 │   └── screenassets
-│       ├── menu.go
 │       ├── screenasset.go
+│       ├── states
+│       │   ├── menu.go
+│       │   └── states.go
 │       └── ui
 │           ├── button.go
 │           └── button_test.go

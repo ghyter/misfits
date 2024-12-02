@@ -6,8 +6,8 @@ func (s GameState) String() string {
 	switch s {
 	case Menu:
 		return "Menu"
-	case Game:
-		return "Game"
+	case Playing:
+		return "Playing"
 	case Pause:
 		return "Pause"
 	case GameOver:
@@ -18,8 +18,8 @@ func (s GameState) String() string {
 }
 
 const (
-	Menu GameState = iota // Menu state of the game
-	Game                  // Gameplay state
+	Menu    GameState = iota // Menu state of the game
+	Playing                  // Gameplay state
 	Pause
 	GameOver
 )

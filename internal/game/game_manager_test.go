@@ -7,6 +7,7 @@ import (
 	"github.com/ghyter/misfits/internal/dependencies"
 	"github.com/ghyter/misfits/internal/embeds"
 	"github.com/ghyter/misfits/internal/resources"
+	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/font"
 )
 
@@ -27,6 +28,15 @@ func (m *MockAssetManager) Get(path string) ([]byte, error) {
 		return []byte("mock font data"), nil
 	}
 	return nil, errors.New("asset not found")
+}
+
+func (m *MockAssetManager) GetEbitenImage(path string) (*ebiten.Image, error) {
+	if path == "images/test_image.png" {
+		// Create a dummy Ebiten image for testing
+		img := ebiten.NewImage(100, 100) // Mock an image with 100x100 pixels
+		return img, nil
+	}
+	return nil, errors.New("image not found")
 }
 
 func TestGameManager_NewGame(t *testing.T) {

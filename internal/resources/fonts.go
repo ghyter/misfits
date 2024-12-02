@@ -47,6 +47,10 @@ func (fm *DefaultFontManager) LoadFont(name string, size float64) (font.Face, er
 	}
 
 	assetManager, err := dependencies.Get[embeds.AssetManager](fm.dm)
+	if err != nil {
+		return nil, err
+	}
+
 	// Load the font data from the AssetManager
 	fontData, err := assetManager.Get(fmt.Sprintf("fonts/%s", name))
 	if err != nil {
